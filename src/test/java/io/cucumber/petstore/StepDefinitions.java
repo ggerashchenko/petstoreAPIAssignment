@@ -13,9 +13,16 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
 
+import static io.cucumber.petstore.Context.PET_OBJECT;
+
 public class StepDefinitions {
 
-    private Response lastResponse;
+    TestContext testContext;
+
+    public StepDefinitions(TestContext testContext) {
+        this.testContext = testContext;
+    }
+
     private PetDto.PetDetails createdPetData;
 
     private PetDto.PetDetails petTesObject = PetDto.PetDetails.builder()
@@ -31,13 +38,16 @@ public class StepDefinitions {
 
     @Given("^I add a pet to store$")
     public void iHaveGivenPet() throws IOException {
-        lastResponse = PetApiClient.postPet(petTesObject);
-        createdPetData = convertResponseToObject(lastResponse);
+        Response response = PetApiClient.postPet(petTesObject);
+        setResponseContext(response);
+        createdPetData = convertResponseToObject(response);
     }
 
     @Then("^Verify pet successfully added$")
     public void thePetShouldBeAvailable() throws IOException {
-        Assert.assertEquals(200, lastResponse.getStatusCode());
+        Response responseContext = getResponseContext();
+
+        Assert.assertEquals(200, responseContext.getStatusCode());
         Response getPetResp = PetApiClient.getPet(createdPetData.getId());
         PetDto.PetDetails petDetails = convertResponseToObject(getPetResp);
         Assert.assertEquals(200, getPetResp.getStatusCode());
@@ -47,13 +57,14 @@ public class StepDefinitions {
     @When("^I change availability status$")
     public void iChangeAvailabilityStatus() throws Throwable {
         petTesObject.setStatus(Status.sold);
-        lastResponse = PetApiClient.updatePet(petTesObject);
-        Assert.assertEquals(200, lastResponse.getStatusCode());
+        Response response = PetApiClient.updatePet(petTesObject);
+        Assert.assertEquals(200, response.getStatusCode());
+        setResponseContext(response);
     }
 
     @Then("^Verify pet successfully updated$")
     public void verifyPetSuccessfullyUpdated() throws Throwable {
-        PetDto.PetDetails petDetails = convertResponseToObject(lastResponse);
+        PetDto.PetDetails petDetails = convertResponseToObject(getResponseContext());
         Assert.assertEquals(Status.sold, petDetails.getStatus());
     }
 
@@ -72,5 +83,13 @@ public class StepDefinitions {
     private PetDto.PetDetails convertResponseToObject(Response lastResponse) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
         return objectMapper.readValue(lastResponse.getBody().print(), PetDto.PetDetails.class);
+    }
+
+    private void setResponseContext(Response lastResponse) {
+        testContext.scenarioContext.setContext(PET_OBJECT, lastResponse);
+    }
+
+    private Response getResponseContext() {
+        return (Response) testContext.getScenarioContext().getContext(PET_OBJECT);
     }
 }

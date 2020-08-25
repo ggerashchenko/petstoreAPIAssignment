@@ -13,7 +13,7 @@ public class TagDto {
     @Data
     @Builder
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class TagDetails{
+    public static class TagDetails {
         private Integer id;
         private String name;
     }
