@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/ggerashchenko/petstoreAPIAssignment.svg?branch=master)](https://travis-ci.org/ggerashchenko/petstoreAPIAssignment)
+
 ##  Document purpose
 I will try briefly to explain how I wanted to approach testing, which difficulties I faced and what I actually was able to produce.
 
